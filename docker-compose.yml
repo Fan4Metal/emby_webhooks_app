@@ -1,0 +1,8 @@
+services:
+  emby-webhooks:
+    build: .
+    container_name: emby-webhooks
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./webhooks.db:/app/webhooks.db  # сохраняем БД на хосте

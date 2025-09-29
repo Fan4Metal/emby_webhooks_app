@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Emby Webhooks</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f4f4f4; }
+        .controls { margin-bottom: 15px; }
+        button { padding: 6px 12px; }
+    </style>
+</head>
+<body>
+    <h1>Emby Webhooks</h1>
+
+    <div class="controls">
+        <form method="post" action="/clear" onsubmit="return confirm('Точно очистить все логи?');">
+            <button type="submit">🗑 Очистить лог</button>
+        </form>
+    </div>
+
+    <table id="webhook-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Event</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- строки будут подставляться скриптом -->
+        </tbody>
+    </table>
+
+    <script>
+        const icons = {
+            "playback.start": "▶️",
+            "playback.stop": "⏹",
+            "playback.pause": "⏸",
+            "playback.unpause": "▶️",
+            "system.notification": "🔔"
+        };
+
+        async function loadData() {
+            const response = await fetch('/data');
+            const data = await response.json();
+            const tbody = document.querySelector('#webhook-table tbody');
+            tbody.innerHTML = '';
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                const icon = icons[row.event] || "📺";
+                tr.innerHTML = `
+                    <td>${row.title}</td>
+                    <td>${icon} ${row.event}</td>
+                    <td>${row.date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Загружаем сразу и обновляем каждые 10 секунд
+        loadData();
+        setInterval(loadData, 10000);
+    </script>
+</body>
+</html>
