@@ -6,15 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-
-    <!-- PWA: возможность "Добавить на главный экран" -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/icon-512.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/static/icon-512.png">
     <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#121212">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Emby Webhooks Monitor">
-    <link rel="apple-touch-icon" href="/static/favicon.ico">
 
     <style>
         body {
@@ -55,55 +50,48 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 500px;
+            table-layout: fixed;
         }
-
         th, td {
             border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-            word-wrap: break-word;
+            padding: 6px;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-
         th {
             background: #f4f4f4;
-            font-size: 14px;
         }
-
-        td {
-            font-size: 14px;
+        td:first-child, th:first-child {
+            text-align: center;
+            width: 40px;
+        }
+        td:nth-child(2), th:nth-child(2) {
+            width: 160px;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        td:last-child, th:last-child {
+            text-align: right;
+            width: 140px;
         }
 
         /* Цвета событий */
-        .event-start { background: #dff0d8; }
-        .event-pause { background: #fcf8e3; }
-        .event-stop  { background: #f2dede; }
+        .event-start { background: #dff0d8; }   /* зелёный */
+        .event-pause { background: #fcf8e3; }   /* жёлтый */
+        .event-stop  { background: #f2dede; }   /* красный */
 
-        /* 🌙 Dark mode */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background: #121212;
-                color: #eee;
-            }
-            table {
-                border-color: #444;
-            }
-            th, td {
-                border: 1px solid #444;
-            }
-            th {
-                background: #222;
-                color: #fff;
-            }
-            .event-start { background: #1b3d1b; }
-            .event-pause { background: #4a3d1a; }
-            .event-stop  { background: #4a1a1a; }
-            button {
-                background: #c9302c;
-            }
-            button:hover {
-                background: #a02220;
-            }
+        /* Подсветка строки при наведении */
+        tr:hover {
+            background: #e9ecef !important;
+        }
+
+        @media (max-width: 480px) {
+            body { font-size: 13px; }
+            td, th { padding: 4px; }
+            td:nth-child(2), th:nth-child(2) { font-size: 12px; }
+            td:last-child, th:last-child { font-size: 11px; }
         }
     </style>
 </head>
@@ -120,9 +108,9 @@
         <table id="webhook-table">
             <thead>
                 <tr>
-                    <th>Сообщение</th>
-                    <th>Дата</th>
-                    <th>Событие</th>
+                    <th style="width: 40px; text-align:center;">🎬</th>
+                    <th style="width: 160px;">Сообщение</th>
+                    <th style="width: 100px;">Дата</th>
                 </tr>
             </thead>
             <tbody>
@@ -132,7 +120,7 @@
     </div>
 
     <script>
-        const icons = {
+        const eventIcons = {
             "playback.start": "▶️",
             "playback.stop": "⏹",
             "playback.pause": "⏸",
@@ -148,17 +136,26 @@
 
             data.forEach(row => {
                 const tr = document.createElement('tr');
+
+                // Цвет строки
                 let cls = "";
-                if (row.event === "playback.start" || row.event === "playback.unpause") cls = "event-start";
-                else if (row.event === "playback.pause") cls = "event-pause";
-                else if (row.event === "playback.stop") cls = "event-stop";
+                if (row.event === "playback.start" || row.event === "playback.unpause") {
+                    cls = "event-start";
+                } else if (row.event === "playback.pause") {
+                    cls = "event-pause";
+                } else if (row.event === "playback.stop") {
+                    cls = "event-stop";
+                }
                 tr.className = cls;
 
-                const icon = icons[row.event] || "📺";
+                const icon = eventIcons[row.event] || "📺";
+
+                const fullDate = row.date;
+
                 tr.innerHTML = `
+                    <td>${icon}</td>
                     <td>${row.title}</td>
-                    <td>${row.date}</td>
-                    <td>${icon} ${row.event}</td>
+                    <td>${fullDate}</td>
                 `;
                 tbody.appendChild(tr);
             });
