@@ -33,23 +33,35 @@ async def startup():
 @app.post("/emby/webhook")
 async def emby_webhook(request: Request):
     data = await request.json()
+
+    # Извлекаем данные
+    server_name = data.get("Server", {}).get("Name", "UnknownServer")
+    # user_name = data.get("User", {}).get("Name", "UnknownUser")
     title = data.get("Title", "Нет Title")
     event = data.get("Event", "Нет Event")
     date = data.get("Date", "")
+
+    # Убираем «ёлочки» и обычные кавычки
+    clean_title = title.replace("«", "").replace("»", "").strip()
+
+    # Формируем строку для отображения
+    combined_title = f"{server_name}: {clean_title}"
 
     # Преобразуем дату в человекочитаемый формат
     pretty_date = date
     try:
         dt = datetime.fromisoformat(date.replace("Z", "+00:00"))
-        dt_local = dt + timedelta(hours=3) 
+        # часовой пояс MSK
+        dt_local = dt + timedelta(hours=3)
         pretty_date = dt_local.strftime("%d.%m.%Y %H:%M:%S")
     except Exception:
         pass
 
+    # Сохраняем в БД
     async with aiosqlite.connect("webhooks.db") as db:
         await db.execute(
             "INSERT INTO webhooks (title, event, date) VALUES (?, ?, ?)",
-            (title, event, pretty_date),
+            (combined_title, event, pretty_date),
         )
         await db.commit()
 

@@ -1,19 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Emby Webhooks</title>
+    <title>Emby Webhooks Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
+    <!-- PWA: возможность "Добавить на главный экран" -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#121212">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Emby Webhooks Monitor">
+    <link rel="apple-touch-icon" href="/static/favicon.ico">
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #f4f4f4; }
-        .controls { margin-bottom: 15px; }
-        button { padding: 6px 12px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            font-size: 16px;
+            background: #fafafa;
+            color: #222;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 16px;
+            font-size: 16px;
+            border: none;
+            background: #d9534f;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #c9302c;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        th {
+            background: #f4f4f4;
+            font-size: 14px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        /* Цвета событий */
+        .event-start { background: #dff0d8; }
+        .event-pause { background: #fcf8e3; }
+        .event-stop  { background: #f2dede; }
+
+        /* 🌙 Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #121212;
+                color: #eee;
+            }
+            table {
+                border-color: #444;
+            }
+            th, td {
+                border: 1px solid #444;
+            }
+            th {
+                background: #222;
+                color: #fff;
+            }
+            .event-start { background: #1b3d1b; }
+            .event-pause { background: #4a3d1a; }
+            .event-stop  { background: #4a1a1a; }
+            button {
+                background: #c9302c;
+            }
+            button:hover {
+                background: #a02220;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Emby Webhooks</h1>
+    <h1>📺 Emby Webhooks Monitor</h1>
 
     <div class="controls">
         <form method="post" action="/clear" onsubmit="return confirm('Точно очистить все логи?');">
@@ -21,18 +116,20 @@
         </form>
     </div>
 
-    <table id="webhook-table">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Event</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- строки будут подставляться скриптом -->
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table id="webhook-table">
+            <thead>
+                <tr>
+                    <th>Сообщение</th>
+                    <th>Дата</th>
+                    <th>Событие</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- строки будут подставляться скриптом -->
+            </tbody>
+        </table>
+    </div>
 
     <script>
         const icons = {
@@ -51,17 +148,22 @@
 
             data.forEach(row => {
                 const tr = document.createElement('tr');
+                let cls = "";
+                if (row.event === "playback.start" || row.event === "playback.unpause") cls = "event-start";
+                else if (row.event === "playback.pause") cls = "event-pause";
+                else if (row.event === "playback.stop") cls = "event-stop";
+                tr.className = cls;
+
                 const icon = icons[row.event] || "📺";
                 tr.innerHTML = `
                     <td>${row.title}</td>
-                    <td>${icon} ${row.event}</td>
                     <td>${row.date}</td>
+                    <td>${icon} ${row.event}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Загружаем сразу и обновляем каждые 10 секунд
         loadData();
         setInterval(loadData, 10000);
     </script>
