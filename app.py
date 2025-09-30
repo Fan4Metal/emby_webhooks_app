@@ -36,23 +36,32 @@ async def emby_webhook(request: Request):
 
     # Извлекаем данные
     server_name = data.get("Server", {}).get("Name", "UnknownServer")
-    # user_name = data.get("User", {}).get("Name", "UnknownUser")
-    title = data.get("Title", "Нет Title")
+    user_name = data.get("User", {}).get("Name", "UnknownUser")
     event = data.get("Event", "Нет Event")
+    item_name = data.get("Item", {}).get("Name", "Неизвестный контент")
+    device_name = data.get("Session", {}).get("DeviceName", "Неизвестное устройство")
     date = data.get("Date", "")
 
-    # Убираем «ёлочки» и обычные кавычки
-    clean_title = title.replace("«", "").replace("»", "").strip()
+    # Сопоставление событий с действиями
+    event_actions = {
+        "playback.start": "начал просмотр",
+        "playback.stop": "остановил просмотр",
+        "playback.pause": "поставил на паузу",
+        "playback.unpause": "возобновил просмотр",
+    }
+    action = event_actions.get(event, event)
 
-    # Формируем строку для отображения
-    combined_title = f"{server_name}: {clean_title}"
+    # Формируем сообщение
+    if event == "system.notificationtest":
+        message = f'{server_name}: тестовое уведомление'
+    else:
+        message = f'{server_name}: {user_name} {action} «{item_name}» на {device_name}'
 
-    # Преобразуем дату в человекочитаемый формат
+    # Преобразуем дату
     pretty_date = date
     try:
         dt = datetime.fromisoformat(date.replace("Z", "+00:00"))
-        # часовой пояс MSK
-        dt_local = dt + timedelta(hours=3)
+        dt_local = dt + timedelta(hours=3)  # поправка UTC+3
         pretty_date = dt_local.strftime("%d.%m.%Y %H:%M:%S")
     except Exception:
         pass
@@ -61,7 +70,7 @@ async def emby_webhook(request: Request):
     async with aiosqlite.connect("webhooks.db") as db:
         await db.execute(
             "INSERT INTO webhooks (title, event, date) VALUES (?, ?, ?)",
-            (combined_title, event, pretty_date),
+            (message, event, pretty_date),
         )
         await db.commit()
 
@@ -78,9 +87,7 @@ async def index(request: Request):
 @app.get("/data")
 async def get_data():
     async with aiosqlite.connect("webhooks.db") as db:
-        async with db.execute(
-            "SELECT title, event, date FROM webhooks ORDER BY id DESC LIMIT 50"
-        ) as cursor:
+        async with db.execute("SELECT title, event, date FROM webhooks ORDER BY id DESC LIMIT 50") as cursor:
             rows = await cursor.fetchall()
 
     return JSONResponse([{"title": r[0], "event": r[1], "date": r[2]} for r in rows])
