@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-import aiosqlite
-from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
+
+import aiosqlite
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 
 # Инициализация БД
@@ -56,9 +57,9 @@ async def emby_webhook(request: Request):
 
     # Формируем сообщение
     if event == "system.notificationtest":
-        message = f'{server_name}: тестовое уведомление'
+        message = f"{server_name}: тестовое уведомление"
     else:
-        message = f'{server_name}: {user_name} {action} «{item_name}» на {device_name}'
+        message = f"{server_name}: {user_name} {action} «{item_name}» на {device_name}"
 
     # Преобразуем дату
     pretty_date = date
@@ -103,4 +104,3 @@ async def clear_logs():
         await db.execute("DELETE FROM webhooks")
         await db.commit()
     return RedirectResponse("/", status_code=303)
-
