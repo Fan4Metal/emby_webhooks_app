@@ -4,10 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import aiosqlite
 from datetime import datetime, timedelta
-
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+from contextlib import asynccontextmanager
 
 
 # Инициализация БД
@@ -24,9 +21,15 @@ async def init_db():
         await db.commit()
 
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     await init_db()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Приём вебхуков от Emby
@@ -100,3 +103,4 @@ async def clear_logs():
         await db.execute("DELETE FROM webhooks")
         await db.commit()
     return RedirectResponse("/", status_code=303)
+
