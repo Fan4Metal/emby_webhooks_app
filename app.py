@@ -60,7 +60,7 @@ async def emby_webhook(request: Request):
     # Формируем сообщение
     if event in event_actions:
         if event == "system.notificationtest":
-            message = f"{server_name}: тестовое уведомление"
+            message = f"{server_name}: {action}"
         else:
             message = f"{server_name}: {user_name} {action} «{item_name}» на {device_name}"
     else:
