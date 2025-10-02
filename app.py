@@ -53,6 +53,7 @@ async def emby_webhook(request: Request):
         "playback.stop": "остановил просмотр",
         "playback.pause": "поставил на паузу",
         "playback.unpause": "возобновил просмотр",
+        "system.notificationtest": "тестовое уведомление"
     }
     action = event_actions.get(event, event)
 
