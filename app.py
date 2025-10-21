@@ -70,8 +70,7 @@ async def emby_webhook(request: Request):
     pretty_date = date
     try:
         dt = datetime.fromisoformat(date.replace("Z", "+00:00"))
-        dt_local = dt + timedelta(hours=3)  # поправка UTC+3
-        pretty_date = dt_local.strftime("%d.%m.%Y %H:%M:%S")
+        pretty_date = dt.strftime("%d.%m.%Y %H:%M:%S")
     except Exception:
         pass
 

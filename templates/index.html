@@ -128,6 +128,28 @@
             "system.notification": "🔔"
         };
 
+        // Преобразуем UTC в локальное время
+        function utcToLocal(utcString) {
+            // Разбираем строку формата "dd.mm.yyyy HH:MM:SS"
+            const parts = utcString.split(' ');
+            const dateParts = parts[0].split('.');
+            const timeParts = parts[1].split(':');
+        
+            // Создаем дату как UTC
+            const utcDate = new Date(Date.UTC(
+                parseInt(dateParts[2]), // год
+                parseInt(dateParts[1]) - 1, // месяц (0-11)
+                parseInt(dateParts[0]), // день
+                parseInt(timeParts[0]), // часы
+                parseInt(timeParts[1]), // минуты
+                parseInt(timeParts[2])  // секунды
+            ));
+
+            // Браузер автоматически преобразует в локальное время
+            return utcDate;
+        }
+
+        // Загружаем данные из API
         async function loadData() {
             const response = await fetch('/data');
             const data = await response.json();
@@ -150,12 +172,13 @@
 
                 const icon = eventIcons[row.event] || "📺";
 
-                const fullDate = row.date;
-
+                const rawDate = row.date;
+                const localDate = utcToLocal(rawDate)
+                
                 tr.innerHTML = `
                     <td>${icon}</td>
                     <td>${row.title}</td>
-                    <td>${fullDate}</td>
+                    <td>${localDate.toLocaleString()}</td>
                 `;
                 tbody.appendChild(tr);
             });
