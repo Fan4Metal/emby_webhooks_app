@@ -1,6 +1,6 @@
 [project]
 name = "emby-webhooks-app"
-version = "0.1.0"
+version = "0.2.0"
 description = "Простое приложение для получения уведомлений от сервера Emby и отображения их в браузере"
 readme = "README.md"
 requires-python = ">=3.13"
