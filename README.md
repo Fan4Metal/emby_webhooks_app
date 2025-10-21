@@ -17,5 +17,5 @@
     - `playback.pause` - постановка на паузу
     - `playback.unpause` - возобновиление просмотра
 2. Поддерживаются типы уведомлений: 
-    - `system.notificationtest` - тестовое уведомление
+    - `system.notification` - тестовое уведомление
 
