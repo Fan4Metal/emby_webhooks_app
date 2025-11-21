@@ -44,6 +44,8 @@ async def emby_webhook(request: Request):
     user_name = data.get("User", {}).get("Name", "Неизвестный пользователь")
     event = data.get("Event", "Нет Event")
     item_name = data.get("Item", {}).get("Name", "Неизвестный контент")
+    year = data.get("Item", {}).get("ProductionYear", "")
+    # tmdb_id = data.get("Item", {}).get("ProviderIds", {}).get("Tmdb", "")
     device_name = data.get("Session", {}).get("DeviceName", "Неизвестное устройство")
     date = data.get("Date", "")
 
@@ -53,7 +55,7 @@ async def emby_webhook(request: Request):
         "playback.stop": "остановил просмотр",
         "playback.pause": "поставил на паузу",
         "playback.unpause": "возобновил просмотр",
-        "system.notificationtest": "тестовое уведомление"
+        "system.notificationtest": "тестовое уведомление",
     }
     action = event_actions.get(event, event)
 
@@ -62,9 +64,9 @@ async def emby_webhook(request: Request):
         if event == "system.notificationtest":
             message = f"{server_name}: {action}"
         else:
-            message = f"{server_name}: {user_name} {action} «{item_name}» на {device_name}"
+            message = f"{server_name}: {user_name} {action} «{item_name} ({year})» на {device_name}"
     else:
-        message = f"{server_name}: User: {user_name}, Event: {event}, Item: {item_name}, Device: {device_name}"
+        message = f"{server_name}: User: {user_name}, Event: {event}, Item: {item_name} ({year}), Device: {device_name}"
 
     # Преобразуем дату
     pretty_date = date
